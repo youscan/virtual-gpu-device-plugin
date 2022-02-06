@@ -1,12 +1,27 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates
+# Copyright 2022 Kuartis.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: aws-virtual-gpu-device-plugin-daemonset
+  name: kuartis-virtual-gpu-device-plugin-daemonset
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      name: aws-virtual-gpu-device-plugin
+      name: kuartis-virtual-gpu-device-plugin
   updateStrategy:
     type: RollingUpdate
   template:
@@ -16,19 +31,19 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        name: aws-virtual-gpu-device-plugin
+        name: kuartis-virtual-gpu-device-plugin
     spec:
       hostIPC: true
       nodeSelector:
-        k8s.amazonaws.com/accelerator: vgpu
+        k8s.kuartis.com/accelerator: vgpu
       tolerations:
-      # This toleration is deprecated. Kept here for backward compatibility
-      # See https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - key: k8s.amazonaws.com/vgpu
-        operator: Exists
-        effect: NoSchedule
+        # This toleration is deprecated. Kept here for backward compatibility
+        # See https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - key: k8s.kuartis.com/vgpu
+          operator: Exists
+          effect: NoSchedule
       # Mark this pod as a critical add-on; when enabled, the critical add-on
       # scheduler reserves resources for critical add-on pods so that they can
       # be rescheduled after a failure.
@@ -36,34 +51,34 @@ spec:
       priorityClassName: "system-node-critical"
       # In case machine deploy MPS device plugin and change compute mode to
       initContainers:
-      - name: set-compute-mode
-        image: nvidia/cuda:latest
-        command: ['nvidia-smi', '-c', 'EXCLUSIVE_PROCESS']
-        securityContext:
-          capabilities:
-            add: ["SYS_ADMIN"]
+        - name: set-compute-mode
+          image: nvidia/cuda:11.5.0-runtime-ubuntu20.04
+          command: ["nvidia-smi", "-c", "EXCLUSIVE_PROCESS"]
+          securityContext:
+            capabilities:
+              add: ["SYS_ADMIN"]
       containers:
-      - image: amazon/aws-virtual-gpu-device-plugin:v0.1.1
-        name: aws-virtual-gpu-device-plugin-ctr
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: ["ALL"]
-        volumeMounts:
-        - name: device-plugin
-          mountPath: /var/lib/kubelet/device-plugins
-      - image: nvidia/mps
-        name: mps
-        volumeMounts:
-        - name: nvidia-mps
-          mountPath: /tmp/nvidia-mps
-        env:
-        - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
-          value: "10"
+        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:v0.1.1
+          name: kuartis-virtual-gpu-device-plugin-ctr
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+        - image: nvidia/mps
+          name: mps
+          volumeMounts:
+            - name: nvidia-mps
+              mountPath: /tmp/nvidia-mps
+          env:
+            - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
+              value: "10"
       volumes:
-      - name: device-plugin
-        hostPath:
-          path: /var/lib/kubelet/device-plugins
-      - name: nvidia-mps
-        hostPath:
-          path: /tmp/nvidia-mps
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: nvidia-mps
+          hostPath:
+            path: /tmp/nvidia-mps

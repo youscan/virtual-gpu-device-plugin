@@ -1,3 +1,27 @@
+# IMPORTANT!
+
+This is a fork of https://github.com/awslabs/aws-virtual-gpu-device-plugin.
+
+AWS's original plugin does not support memory allocation via plugin, but by defining language specific arguments.
+
+This fork is in active development, with following goals/challanges:
+
+- Support memory allocation via plugin
+- Support GPU allocation by model name
+- Produce telemetry
+
+End goal is something like:
+
+```yaml
+# On a server with 1 T4 and 2 v100 GPUs with 10 vGPU per device
+    resources:
+      limits:
+        k8s.kuartis.com/nvidia-t4: 10
+        k8s.kuartis.com/nvidia-t4: 16384
+        k8s.kuartis.com/nvidia-v100: 20
+        k8s.kuartis.com/nvidia-v100: 32768
+```
+
 # Virtual GPU device plugin for Kubernetes
 
 The virtual device plugin for Kubernetes is a Daemonset that allows you to automatically:
