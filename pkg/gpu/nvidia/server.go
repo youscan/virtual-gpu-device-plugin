@@ -31,7 +31,7 @@ import (
 
 const (
 	resourceName           = "k8s.kuartis.com/vgpu"
-	serverSock             = pluginapi.DevicePluginPath + "nvidia-aws-vgpu.sock"
+	serverSock             = pluginapi.DevicePluginPath + "nvidia-kuartis-vgpu.sock"
 	envDisableHealthChecks = "DP_DISABLE_HEALTHCHECKS"
 	allHealthChecks        = "xids"
 )

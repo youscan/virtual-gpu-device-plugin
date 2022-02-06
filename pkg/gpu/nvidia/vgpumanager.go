@@ -43,7 +43,7 @@ func (vgm *vGPUManager) Run() error {
 		log.Printf("If this is a GPU node, did you set the docker default runtime to `nvidia`?")
 
 		log.Printf("You can check the prerequisites at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#prerequisites")
-		log.Printf("You can learn how to set the runtime at: https://github.com/awslabs/k8s-virtual-gpu#quick-start") // TODO link is broken
+		log.Printf("You can learn how to set the runtime at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#quick-start")
 
 		select {}
 	}
