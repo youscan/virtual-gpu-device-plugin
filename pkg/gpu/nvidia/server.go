@@ -199,7 +199,7 @@ func (m *NvidiaDevicePlugin) unhealthy(dev *pluginapi.Device) {
 // Allocate which return list of devices.
 func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.AllocateRequest) (*pluginapi.AllocateResponse, error) {
 	devs := m.devs
-	responses := pluginapi.AllocateResponse{}
+	response := new(pluginapi.AllocateResponse)
 	physicalDevsMap := make(map[string]bool)
 	for _, req := range reqs.ContainerRequests {
 		for _, id := range req.DevicesIDs {
@@ -228,20 +228,25 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 		for visibleDev := range physicalDevsMap {
 			visibleDevs = append(visibleDevs, visibleDev)
 		}
-		response := pluginapi.ContainerAllocateResponse{
-			Envs: map[string]string{
-				"NVIDIA_VISIBLE_DEVICES":            strings.Join(visibleDevs, ","),
-				"CUDA_MPS_ACTIVE_THREAD_PERCENTAGE": fmt.Sprintf("%d", 100*len(req.DevicesIDs)/len(m.devs)),
-			},
-			Annotations: map[string]string{
-				"k8s.kuartis.com/gpu-ids": strings.Join(visibleDevs, ","),
-				"k8s.kuartis.com/vgpu-ids": strings.Join(req.DevicesIDs, ","),
-			},
-		}
-		responses.ContainerResponses = append(responses.ContainerResponses, &response)
+
+		cresp := new(pluginapi.ContainerAllocateResponse)
+
+		cresp.Envs = map[string]string{}
+		cresp.Envs["NVIDIA_VISIBLE_DEVICES"] = strings.Join(visibleDevs, ",")
+		cresp.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = fmt.Sprintf("%d", 100*len(req.DevicesIDs)/len(m.devs))
+
+		cresp.Annotations = map[string]string{}
+		cresp.Annotations["k8s.kuartis.com/gpu-ids"] = strings.Join(visibleDevs, ",")
+		cresp.Annotations["k8s.kuartis.com/vgpu-ids"] = strings.Join(req.DevicesIDs, ",")
+
+		log.Printf("Allocated physical devices: %s", strings.Join(visibleDevs, ","))
+		log.Printf("Allocated virtual devices: %s", strings.Join(req.DevicesIDs, ","))
+		log.Printf("Allocated MPS ACTIVE THREAD PERCENTAGE: %s", fmt.Sprintf("%d", 100*len(req.DevicesIDs)/len(m.devs)))
+
+		response.ContainerResponses = append(response.ContainerResponses, cresp)
 	}
 
-	return &responses, nil
+	return response, nil
 }
 
 func (m *NvidiaDevicePlugin) PreStartContainer(context.Context, *pluginapi.PreStartContainerRequest) (*pluginapi.PreStartContainerResponse, error) {
