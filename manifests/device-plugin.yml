@@ -45,8 +45,10 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
       containers:
-        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.3.1
+        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.3.2
           name: kuartis-virtual-gpu-device-plugin-ctr
+          command:
+            - /usr/bin/virtual-gpu-device-plugin
           args:
             - --vgpu=10
           securityContext:
