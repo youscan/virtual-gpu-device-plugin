@@ -233,6 +233,10 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 				"NVIDIA_VISIBLE_DEVICES":            strings.Join(visibleDevs, ","),
 				"CUDA_MPS_ACTIVE_THREAD_PERCENTAGE": fmt.Sprintf("%d", 100*len(req.DevicesIDs)/len(m.devs)),
 			},
+			Annotations: map[string]string{
+				"k8s.kuartis.com/gpu-ids": strings.Join(visibleDevs, ","),
+				"k8s.kuartis.com/vgpu-ids": strings.Join(req.DevicesIDs, ","),
+			},
 		}
 		responses.ContainerResponses = append(responses.ContainerResponses, &response)
 	}
