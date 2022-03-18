@@ -20,7 +20,7 @@ import (
 
 	"log"
 
-	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
+	"github.com/NVIDIA/go-nvml/pkg/nvml"
 	"github.com/fsnotify/fsnotify"
 	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
 )
@@ -38,8 +38,8 @@ func NewVirtualGPUManager(vGPUCount int) *vGPUManager {
 
 func (vgm *vGPUManager) Run() error {
 	log.Println("Loading NVML")
-	if err := nvml.Init(); err != nil {
-		log.Printf("Failed to initialize NVML: %s.", err)
+	if ret := nvml.Init(); ret != nvml.SUCCESS {
+		log.Printf("Failed to initialize NVML: %s.", nvml.ErrorString(ret))
 		log.Printf("If this is a GPU node, did you set the docker default runtime to `nvidia`?")
 
 		log.Printf("You can check the prerequisites at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#prerequisites")
@@ -68,6 +68,9 @@ func (vgm *vGPUManager) Run() error {
 
 	restart := true
 	var devicePlugin *NvidiaDevicePlugin
+
+	log.Println("Starting metric server.")
+	go MetricServer()
 
 L:
 	for {

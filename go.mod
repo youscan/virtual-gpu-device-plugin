@@ -3,19 +3,21 @@ module github.com/kuartis/kuartis-virtual-gpu-device-plugin
 go 1.17
 
 require (
-	github.com/NVIDIA/gpu-monitoring-tools v0.0.0-20191011002627-7a750c7e4f8b
-	github.com/fsnotify/fsnotify v1.4.7
-	golang.org/x/net v0.0.0-20190812203447-cdfb69ac37fc
-	google.golang.org/grpc v1.24.0
+	github.com/NVIDIA/go-nvml v0.11.6-0
+	github.com/fsnotify/fsnotify v1.5.1
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
+	google.golang.org/grpc v1.45.0
+	k8s.io/cri-api v0.20.13
 	k8s.io/kubernetes v1.16.0
 )
 
 require (
-	github.com/gogo/protobuf v1.3.0 // indirect
-	github.com/golang/protobuf v1.3.2 // indirect
-	golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f // indirect
-	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/genproto v0.0.0-20190926190326-7ee9db18f195 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	golang.org/x/sys v0.0.0-20220318055525-2edf467146b5 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
 
 replace (
@@ -29,7 +31,7 @@ replace (
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.0.0-20190819145008-029dd04813af
 	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b
 	k8s.io/component-base => k8s.io/component-base v0.0.0-20190819141909-f0f7c184477d
-	k8s.io/cri-api => k8s.io/cri-api v0.0.0-20190817025403-3ae76f584e79
+	k8s.io/cri-api => k8s.io/cri-api v0.20.13
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.0.0-20190819145328-4831a4ced492
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.0.0-20190819142756-13daafd3604f
 	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.0.0-20190819144832-f53437941eef

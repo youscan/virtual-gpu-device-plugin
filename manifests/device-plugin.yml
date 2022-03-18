@@ -45,7 +45,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
       containers:
-        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.3.3
+        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.4.0
           name: kuartis-virtual-gpu-device-plugin-ctr
           command:
             - /usr/bin/virtual-gpu-device-plugin
@@ -58,6 +58,11 @@ spec:
           volumeMounts:
             - name: device-plugin
               mountPath: /var/lib/kubelet/device-plugins
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - mountPath: /var/run/containerd/containerd.sock
+              name: containerdsock
         - image: nvidia/mps
           name: mps
           volumeMounts:
@@ -70,3 +75,9 @@ spec:
         - name: nvidia-mps
           hostPath:
             path: /tmp/nvidia-mps
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: containerdsock
+          hostPath:
+            path: /var/run/containerd/containerd.sock
