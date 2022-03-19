@@ -133,7 +133,7 @@ func (m *NvidiaDevicePlugin) Start() error {
 	}
 	conn.Close()
 
-	go m.healthcheck()
+	//go m.healthcheck()
 
 	return nil
 }
