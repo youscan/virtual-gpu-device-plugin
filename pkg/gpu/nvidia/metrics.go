@@ -16,11 +16,11 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	pb "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
+	pb "k8s.io/cri-api/pkg/apis/runtime/v1"
 )
 
 const (
-	containerdsocket = "/var/run/containerd/containerd.sock"
+	dockershimsocket = "/var/run/dockershim.sock"
 	timeout          = 10 * time.Second
 )
 
@@ -121,7 +121,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 func getRuntimeClient() (pb.RuntimeServiceClient, *grpc.ClientConn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, containerdsocket, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(),
+	conn, err := grpc.DialContext(ctx, dockershimsocket, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(),
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 			return net.DialTimeout("unix", addr, timeout)
 		}),
