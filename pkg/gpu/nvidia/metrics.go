@@ -77,13 +77,14 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Found %d containers", len(containers.Containers))
 	containerMap := make(map[string]containerInfo)
 	for _, container := range containers.GetContainers() {
+		log.Printf("Found container %s", container.GetId())
 		containerMap[container.Id] = containerInfo{
 			Node:        node,
 			Namespace:   container.Labels["io.kubernetes.pod.namespace"],
 			Pod:         container.Labels["io.kubernetes.pod.name"],
 			PodUid:      container.Labels["io.kubernetes.pod.uid"],
 			Container:   container.Metadata.Name,
-			ContainerId: container.Id,
+			ContainerId: container.GetId(),
 		}
 	}
 	collected := []metric{}
@@ -95,7 +96,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Found %d processes on GPU %d", len(processes), i)
 		for _, process := range processes {
 			containerId := getContainerId(process.Pid)
-			container := containerMap[containerId]
+			container := containerMap[containerId[:13]]
 			collected = append(collected, metric{
 				Pid:           process.Pid,
 				UsedGpuMemory: process.UsedGpuMemory,
