@@ -74,6 +74,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error getting containers:", err)
 		return
 	}
+	log.Printf("Found %d containers", len(containers.Containers))
 	containerMap := make(map[string]containerInfo)
 	for _, container := range containers.GetContainers() {
 		containerMap[container.Id] = containerInfo{
@@ -91,6 +92,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		check(ret)
 		processes, ret := nvml.DeviceGetMPSComputeRunningProcesses(d)
 		check(ret)
+		log.Printf("Found %d processes on GPU %d", len(processes), i)
 		for _, process := range processes {
 			containerId := getContainerId(process.Pid)
 			container := containerMap[containerId]
@@ -139,5 +141,7 @@ func getContainerId(pid uint32) string {
 		log.Printf("Error reading proc file %s for process: %d, error: %s", file, pid, err)
 	}
 	proc := string(data)
-	return proc[strings.LastIndex(proc, "/")+1:]
+	containerId := proc[strings.LastIndex(proc, "/")+1:]
+	log.Printf("Found container id %s for process: %d", containerId, pid)
+	return containerId
 }
