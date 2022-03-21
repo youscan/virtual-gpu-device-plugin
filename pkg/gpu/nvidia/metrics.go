@@ -77,13 +77,13 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Found %d containers", len(containers.Containers))
 	containerMap := make(map[string]containerInfo)
 	for _, container := range containers.GetContainers() {
-		log.Printf("Found container %s", container.GetId())
-		containerMap[container.Id] = containerInfo{
+		log.Printf("Found container %+v", container)
+		containerMap[container.GetId()] = containerInfo{
 			Node:        node,
-			Namespace:   container.Labels["io.kubernetes.pod.namespace"],
-			Pod:         container.Labels["io.kubernetes.pod.name"],
-			PodUid:      container.Labels["io.kubernetes.pod.uid"],
-			Container:   container.Metadata.Name,
+			Namespace:   container.GetLabels()["io.kubernetes.pod.namespace"],
+			Pod:         container.GetLabels()["io.kubernetes.pod.name"],
+			PodUid:      container.GetLabels()["io.kubernetes.pod.uid"],
+			Container:   container.GetMetadata().GetName(),
 			ContainerId: container.GetId(),
 		}
 	}
@@ -96,7 +96,8 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Found %d processes on GPU %d", len(processes), i)
 		for _, process := range processes {
 			containerId := getContainerId(process.Pid)
-			container := containerMap[containerId[:13]]
+			container := containerMap[containerId]
+			log.Printf("Found container %+v for process: %d", container, process.Pid)
 			collected = append(collected, metric{
 				Pid:           process.Pid,
 				UsedGpuMemory: process.UsedGpuMemory,
