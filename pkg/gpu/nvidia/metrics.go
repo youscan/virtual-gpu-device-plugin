@@ -26,8 +26,7 @@ const (
 
 var node = os.Getenv("NODE_NAME")
 
-var metricsFormat = `
-# HELP gpu_memory_usage_per_container Shows the GPU memory usage per container.
+var metricsFormat = `# HELP gpu_memory_usage_per_container Shows the GPU memory usage per container.
 # TYPE gpu_memory_usage_per_container gauge
 {{- range $m := . }}
 gpu_memory_usage_per_container{pid="{{ $m.Pid }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }}",node="{{ $m.Node }}",namespace="{{ $m.Namespace }}",pod="{{ $m.Pod }}",poduid="{{ $m.PodUid }}",container="{{ $m.Container }}",containerid="{{ $m.ContainerId }}"} {{ $m.UsedGpuMemory }}
@@ -86,7 +85,6 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 			ContainerId: container.GetId(),
 		}
 	}
-	log.Printf("Current map %+v", containerMap)
 	collected := []metric{}
 	for i := 0; i < getDeviceCount(); i++ {
 		d, ret := nvml.DeviceGetHandleByIndex(i)
@@ -96,7 +94,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Found %d processes on GPU %d", len(processes), i)
 		for _, process := range processes {
 			containerId := getContainerId(process.Pid)
-			if container, ok := containerMap[strings.TrimSpace(containerId)]; ok {
+			if container, ok := containerMap[containerId]; ok {
 				log.Printf("Using %s Found container %+v for process: %d", containerId, container, process.Pid)
 				collected = append(collected, metric{
 					Pid:           process.Pid,
@@ -145,6 +143,5 @@ func getContainerId(pid uint32) string {
 	}
 	proc := string(data)
 	containerId := proc[strings.LastIndex(proc, "/")+1:]
-	log.Printf("Found container id %s for process: %d", containerId, pid)
-	return containerId
+	return strings.TrimSpace(containerId)
 }

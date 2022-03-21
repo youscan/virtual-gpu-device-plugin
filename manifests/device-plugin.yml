@@ -21,13 +21,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      name: kuartis-virtual-gpu-device-plugin
+      app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        name: kuartis-virtual-gpu-device-plugin
+        app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
     spec:
       hostIPC: true
       nodeSelector:
@@ -45,7 +45,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
       containers:
-        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.4.10
+        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.5.0
           name: kuartis-virtual-gpu-device-plugin-ctr
           command:
             - /usr/bin/virtual-gpu-device-plugin
@@ -89,3 +89,40 @@ spec:
         - name: dockershimsock
           hostPath:
             path: /var/run/dockershim.sock
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+  name: kuartis-virtual-gpu-device-plugin
+  namespace: kube-system
+spec:
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+  name: kuartis-virtual-gpu-device-plugin
+  namespace: kube-system
+spec:
+  endpoints:
+    - interval: 15s
+      path: /metrics
+      port: metrics
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
