@@ -45,7 +45,7 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
       containers:
-        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.4.1
+        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.4.2
           name: kuartis-virtual-gpu-device-plugin-ctr
           command:
             - /usr/bin/virtual-gpu-device-plugin
@@ -55,6 +55,11 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           ports:
             - containerPort: 8080
               name: metrics

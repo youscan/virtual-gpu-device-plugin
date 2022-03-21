@@ -16,13 +16,15 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	pb "k8s.io/cri-api/pkg/apis/runtime/v1"
+	pb "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 )
 
 const (
 	containerdsocket = "/var/run/containerd/containerd.sock"
 	timeout          = 10 * time.Second
 )
+
+var node = os.Getenv("NODE_NAME")
 
 var metricsFormat = `
 # HELP container_per_gpu
@@ -75,7 +77,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 	containerMap := make(map[string]containerInfo)
 	for _, container := range containers.GetContainers() {
 		containerMap[container.Id] = containerInfo{
-			Node:        "",
+			Node:        node,
 			Namespace:   container.Labels["io.kubernetes.pod.namespace"],
 			Pod:         container.Labels["io.kubernetes.pod.name"],
 			PodUid:      container.Labels["io.kubernetes.pod.uid"],
