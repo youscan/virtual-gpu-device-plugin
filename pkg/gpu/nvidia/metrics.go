@@ -96,20 +96,21 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Found %d processes on GPU %d", len(processes), i)
 		for _, process := range processes {
 			containerId := getContainerId(process.Pid)
-			container := containerMap[containerId]
-			log.Printf("Using %s Found container %+v for process: %d", containerId, container, process.Pid)
-			collected = append(collected, metric{
-				Pid:           process.Pid,
-				UsedGpuMemory: process.UsedGpuMemory,
-				GpuIndex:      i,
-				GpuUUID:       getDeviceUUID(d),
-				Node:          container.Node,
-				Namespace:     container.Namespace,
-				Pod:           container.Pod,
-				PodUid:        container.PodUid,
-				Container:     container.Container,
-				ContainerId:   container.ContainerId,
-			})
+			if container, ok := containerMap[strings.TrimSpace(containerId)]; ok {
+				log.Printf("Using %s Found container %+v for process: %d", containerId, container, process.Pid)
+				collected = append(collected, metric{
+					Pid:           process.Pid,
+					UsedGpuMemory: process.UsedGpuMemory,
+					GpuIndex:      i,
+					GpuUUID:       getDeviceUUID(d),
+					Node:          container.Node,
+					Namespace:     container.Namespace,
+					Pod:           container.Pod,
+					PodUid:        container.PodUid,
+					Container:     container.Container,
+					ContainerId:   container.ContainerId,
+				})
+			}
 		}
 	}
 
