@@ -77,7 +77,6 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Found %d containers", len(containers.Containers))
 	containerMap := make(map[string]containerInfo)
 	for _, container := range containers.GetContainers() {
-		log.Printf("Found container %+v", container)
 		containerMap[container.GetId()] = containerInfo{
 			Node:        node,
 			Namespace:   container.GetLabels()["io.kubernetes.pod.namespace"],
@@ -87,6 +86,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 			ContainerId: container.GetId(),
 		}
 	}
+	log.Printf("Current map %+v", containerMap)
 	collected := []metric{}
 	for i := 0; i < getDeviceCount(); i++ {
 		d, ret := nvml.DeviceGetHandleByIndex(i)
@@ -97,7 +97,7 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 		for _, process := range processes {
 			containerId := getContainerId(process.Pid)
 			container := containerMap[containerId]
-			log.Printf("Found container %+v for process: %d", container, process.Pid)
+			log.Printf("Using %s Found container %+v for process: %d", containerId, container, process.Pid)
 			collected = append(collected, metric{
 				Pid:           process.Pid,
 				UsedGpuMemory: process.UsedGpuMemory,
