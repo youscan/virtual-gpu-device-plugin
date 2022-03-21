@@ -27,10 +27,10 @@ const (
 var node = os.Getenv("NODE_NAME")
 
 var metricsFormat = `
-# HELP container_per_gpu
-# TYPE container_per_gpu gauge
+# HELP gpu_memory_usage_per_container Shows the GPU memory usage per container.
+# TYPE gpu_memory_usage_per_container gauge
 {{- range $m := . }}
-container_per_gpu{pid="{{ $m.Pid }}",usedgpumemory="{{ $m.UsedGpuMemory }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }},node="{{ $m.Node }},namespace="{{ $m.Namespace }},pod="{{ $m.Pod }},poduid="{{ $m.PodUid }},container="{{ $m.Container }},containerid="{{ $m.ContainerId }}"} 1
+gpu_memory_usage_per_container{pid="{{ $m.Pid }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }}",node="{{ $m.Node }}",namespace="{{ $m.Namespace }}",pod="{{ $m.Pod }}",poduid="{{ $m.PodUid }}",container="{{ $m.Container }}",containerid="{{ $m.ContainerId }}"} {{ $m.UsedGpuMemory }}
 {{- end -}}`
 
 type metric struct {
