@@ -55,13 +55,6 @@ func getVGPUDevices(vGPUCount int) []*pluginapi.Device {
 			dev := pluginapi.Device{
 				ID:     vGPUDeviceID,
 				Health: pluginapi.Healthy,
-				Topology: &pluginapi.TopologyInfo{
-					Nodes: []*pluginapi.NUMANode{
-						{
-							ID: int64(i), // Dont split vGPUs accross different physical GPU devices.
-						},
-					},
-				},
 			}
 
 			devs = append(devs, &dev)

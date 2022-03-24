@@ -26,13 +26,15 @@ import (
 )
 
 type vGPUManager struct {
-	vGPUCount int
+	vGPUCount     int
+	allowMultiGpu bool
 }
 
 // NewVirtualGPUManager create a instance of vGPUManager
-func NewVirtualGPUManager(vGPUCount int) *vGPUManager {
+func NewVirtualGPUManager(vGPUCount int, allowMultiGpu bool) *vGPUManager {
 	return &vGPUManager{
-		vGPUCount: vGPUCount,
+		vGPUCount:     vGPUCount,
+		allowMultiGpu: allowMultiGpu,
 	}
 }
 
@@ -79,7 +81,7 @@ L:
 				devicePlugin.Stop()
 			}
 
-			devicePlugin = NewNvidiaDevicePlugin(vgm.vGPUCount)
+			devicePlugin = NewNvidiaDevicePlugin(vgm.vGPUCount, vgm.allowMultiGpu)
 			if err := devicePlugin.Serve(); err != nil {
 				log.Printf("You can check the prerequisites at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#prerequisites")
 				log.Printf("You can learn how to set the runtime at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#quick-start")

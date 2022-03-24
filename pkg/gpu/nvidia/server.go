@@ -41,6 +41,8 @@ type NvidiaDevicePlugin struct {
 	devs         []*pluginapi.Device
 	physicalDevs []string
 
+	allowMultiGpu bool
+
 	socket string
 
 	stop   chan interface{}
@@ -50,17 +52,17 @@ type NvidiaDevicePlugin struct {
 }
 
 // NewNvidiaDevicePlugin returns an initialized NvidiaDevicePlugin
-func NewNvidiaDevicePlugin(vGPUCount int) *NvidiaDevicePlugin {
+func NewNvidiaDevicePlugin(vGPUCount int, allowMultiGpu bool) *NvidiaDevicePlugin {
 	physicalDevs := getPhysicalGPUDevices()
 	vGPUDevs := getVGPUDevices(vGPUCount)
 
 	return &NvidiaDevicePlugin{
-		devs:         vGPUDevs,
-		physicalDevs: physicalDevs,
-		socket:       serverSock,
-
-		stop:   make(chan interface{}),
-		health: make(chan *pluginapi.Device),
+		devs:          vGPUDevs,
+		physicalDevs:  physicalDevs,
+		allowMultiGpu: allowMultiGpu,
+		socket:        serverSock,
+		stop:          make(chan interface{}),
+		health:        make(chan *pluginapi.Device),
 	}
 }
 
@@ -221,6 +223,10 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 			if dev.Health != pluginapi.Healthy {
 				return nil, fmt.Errorf("invalid allocation request with unhealthy device %s", id)
 			}
+		}
+
+		if !m.allowMultiGpu && len(physicalDevsMap) > 1 {
+			return nil, fmt.Errorf("invalid allocation request: multiple pyhsical GPUs are not allowed. Requested virtual device ids: %+v", req.DevicesIDs)
 		}
 
 		// Set physical GPU devices as container visible devices

@@ -24,6 +24,7 @@ import (
 
 var (
 	vGPU = flag.Int("vgpu", 10, "Number of virtual GPUs")
+	allowMultiGpu = flag.Bool("allowmultigpu", false, "Allow multiple pyhsical GPU instance assingment to the pod")
 )
 
 const VOLTA_MAXIMUM_MPS_CLIENT = 48
@@ -36,7 +37,7 @@ func main() {
 		log.Fatal("Number of virtual GPUs can not exceed maximum number of MPS clients")
 	}
 
-	vgm := nvidia.NewVirtualGPUManager(*vGPU)
+	vgm := nvidia.NewVirtualGPUManager(*vGPU, *allowMultiGpu)
 
 	err := vgm.Run()
 	if err != nil {
