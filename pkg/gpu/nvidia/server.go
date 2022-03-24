@@ -297,6 +297,11 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 		cresp.Envs = map[string]string{}
 		cresp.Envs["NVIDIA_VISIBLE_DEVICES"] = visibleDevsStr
 		cresp.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = cudaActiveThread
+		memLimitEnv := make([]string, 0, len(visibleDevs))
+		for _, gpu := range visibleDevs {
+			memLimitEnv = append(memLimitEnv, fmt.Sprintf("%s=%s,", gpu, "$GPU_MEMORY_LIMIT"))
+		}
+		cresp.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimitEnv, ",")
 
 		cresp.Annotations = map[string]string{}
 		cresp.Annotations["k8s.kuartis.com/gpu-ids"] = visibleDevsStr
