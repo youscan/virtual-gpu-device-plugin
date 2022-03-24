@@ -26,7 +26,7 @@ import (
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
+	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 
 const (
@@ -64,10 +64,6 @@ func NewNvidiaDevicePlugin(vGPUCount int, allowMultiGpu bool) *NvidiaDevicePlugi
 		stop:          make(chan interface{}),
 		health:        make(chan *pluginapi.Device),
 	}
-}
-
-func (m *NvidiaDevicePlugin) GetDevicePluginOptions(context.Context, *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
-	return &pluginapi.DevicePluginOptions{}, nil
 }
 
 // dial establishes the gRPC communication with the registered device plugin.
@@ -196,6 +192,58 @@ func (m *NvidiaDevicePlugin) ListAndWatch(e *pluginapi.Empty, s pluginapi.Device
 
 func (m *NvidiaDevicePlugin) unhealthy(dev *pluginapi.Device) {
 	m.health <- dev
+}
+
+// GetDevicePluginOptions returns the values of the optional settings for this plugin
+func (m *NvidiaDevicePlugin) GetDevicePluginOptions(context.Context, *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
+	return &pluginapi.DevicePluginOptions{GetPreferredAllocationAvailable: !m.allowMultiGpu}, nil
+}
+
+// GetPreferredAllocation returns the preferred allocation from the set of devices specified in the request
+func (m *NvidiaDevicePlugin) GetPreferredAllocation(ctx context.Context, r *pluginapi.PreferredAllocationRequest) (*pluginapi.PreferredAllocationResponse, error) {
+	response := &pluginapi.PreferredAllocationResponse{}
+	for _, req := range r.ContainerRequests {
+		// available vGPUs per physical GPU
+		availableGpuMap := make(map[string][]string)
+		for _, id := range req.AvailableDeviceIDs {
+			if !deviceExists(m.devs, id) {
+				return nil, fmt.Errorf("invalid allocation request: unknown available device: %s", id)
+			}
+			availableGpuMap[getPhysicalDeviceID(id)] = append(availableGpuMap[getPhysicalDeviceID(id)], id)
+		}
+		// preferred vGPUs per physical GPU
+		mustIncludeGpuMap := make(map[string][]string)
+		for _, id := range req.MustIncludeDeviceIDs {
+			if !deviceExists(m.devs, id) {
+				return nil, fmt.Errorf("invalid allocation request: unknown must include device: %s", id)
+			}
+			mustIncludeGpuMap[getPhysicalDeviceID(id)] = append(mustIncludeGpuMap[getPhysicalDeviceID(id)], id)
+		}
+
+		response.ContainerResponses = append(response.ContainerResponses, &pluginapi.ContainerPreferredAllocationResponse{
+			DeviceIDs: findAvailableDevicesOnSamePhysicalGPU(availableGpuMap, mustIncludeGpuMap, int(req.AllocationSize)),
+		})
+	}
+	return response, nil
+}
+
+func findAvailableDevicesOnSamePhysicalGPU(availableGpuMap map[string][]string, mustIncludeGpuMap map[string][]string, size int) []string {
+	if size <= 0 {
+		return []string{}
+	}
+	if len(mustIncludeGpuMap) == 1 {
+		for _, ids := range mustIncludeGpuMap {
+			if len(ids) >= size {
+				return ids[:size]
+			}
+		}
+	}
+	for _, ids := range availableGpuMap {
+		if len(ids) >= size {
+			return ids[:size]
+		}
+	}
+	return []string{}
 }
 
 // Allocate which return list of devices.

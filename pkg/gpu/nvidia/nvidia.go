@@ -23,7 +23,7 @@ import (
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
 
 	"golang.org/x/net/context"
-	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
+	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 
 func check(ret nvml.Return) bool {
