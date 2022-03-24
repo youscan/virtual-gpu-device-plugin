@@ -201,6 +201,7 @@ func (m *NvidiaDevicePlugin) GetDevicePluginOptions(context.Context, *pluginapi.
 
 // GetPreferredAllocation returns the preferred allocation from the set of devices specified in the request
 func (m *NvidiaDevicePlugin) GetPreferredAllocation(ctx context.Context, r *pluginapi.PreferredAllocationRequest) (*pluginapi.PreferredAllocationResponse, error) {
+	log.Printf("GetPreferredAllocation request: %v", r)
 	response := &pluginapi.PreferredAllocationResponse{}
 	for _, req := range r.ContainerRequests {
 		// available vGPUs per physical GPU
@@ -224,6 +225,7 @@ func (m *NvidiaDevicePlugin) GetPreferredAllocation(ctx context.Context, r *plug
 			DeviceIDs: findAvailableDevicesOnSamePhysicalGPU(availableGpuMap, mustIncludeGpuMap, int(req.AllocationSize)),
 		})
 	}
+	log.Printf("GetPreferredAllocation response: %v", response)
 	return response, nil
 }
 
