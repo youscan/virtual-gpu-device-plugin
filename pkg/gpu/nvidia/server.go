@@ -163,6 +163,9 @@ func (m *NvidiaDevicePlugin) Register(kubeletEndpoint, resourceName string) erro
 		Version:      pluginapi.Version,
 		Endpoint:     path.Base(m.socket),
 		ResourceName: resourceName,
+		Options: &pluginapi.DevicePluginOptions{
+			GetPreferredAllocationAvailable: !m.allowMultiGpu,
+		},
 	}
 
 	_, err = client.Register(context.Background(), reqt)
