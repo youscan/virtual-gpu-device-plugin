@@ -290,17 +290,23 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 
 		cresp := new(pluginapi.ContainerAllocateResponse)
 
+		cudaActiveThread := fmt.Sprintf("%d", 100*len(req.DevicesIDs)/(len(m.devs)/len(m.physicalDevs)*len(visibleDevs)))
+		visibleDevsStr := strings.Join(visibleDevs, ",")
+		allocatedDeviceIdsStr := strings.Join(req.DevicesIDs, ",")
+
 		cresp.Envs = map[string]string{}
-		cresp.Envs["NVIDIA_VISIBLE_DEVICES"] = strings.Join(visibleDevs, ",")
-		cresp.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = fmt.Sprintf("%d", 100*len(req.DevicesIDs)/len(m.devs))
+		cresp.Envs["NVIDIA_VISIBLE_DEVICES"] = visibleDevsStr
+		cresp.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = cudaActiveThread
 
 		cresp.Annotations = map[string]string{}
-		cresp.Annotations["k8s.kuartis.com/gpu-ids"] = strings.Join(visibleDevs, ",")
-		cresp.Annotations["k8s.kuartis.com/vgpu-ids"] = strings.Join(req.DevicesIDs, ",")
+		cresp.Annotations["k8s.kuartis.com/gpu-ids"] = visibleDevsStr
+		cresp.Annotations["k8s.kuartis.com/vgpu-ids"] = allocatedDeviceIdsStr
+		cresp.Annotations["k8s.kuartis.com/vgpu-count"] = fmt.Sprintf("%d", len(req.DevicesIDs))
+		cresp.Annotations["k8s.kuartis.com/mps-active-thread"] = cudaActiveThread
 
-		log.Printf("Allocated physical devices: %s", strings.Join(visibleDevs, ","))
-		log.Printf("Allocated virtual devices: %s", strings.Join(req.DevicesIDs, ","))
-		log.Printf("Allocated MPS ACTIVE THREAD PERCENTAGE: %s", fmt.Sprintf("%d", 100*len(req.DevicesIDs)/len(m.devs)))
+		log.Printf("Allocated physical devices: %s", visibleDevsStr)
+		log.Printf("Allocated virtual devices: %s", allocatedDeviceIdsStr)
+		log.Printf("Allocated MPS ACTIVE THREAD PERCENTAGE: %s", cudaActiveThread)
 
 		response.ContainerResponses = append(response.ContainerResponses, cresp)
 	}

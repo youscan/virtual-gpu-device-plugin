@@ -29,29 +29,33 @@ var node = os.Getenv("NODE_NAME")
 var metricsFormat = `# HELP gpu_memory_usage_per_container Shows the GPU memory usage per container.
 # TYPE gpu_memory_usage_per_container gauge
 {{- range $m := . }}
-gpu_memory_usage_per_container{pid="{{ $m.Pid }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }}",node="{{ $m.Node }}",namespace="{{ $m.Namespace }}",pod="{{ $m.Pod }}",poduid="{{ $m.PodUid }}",container="{{ $m.Container }}",containerid="{{ $m.ContainerId }}"} {{ $m.UsedGpuMemory }}
+gpu_memory_usage_per_container{pid="{{ $m.Pid }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }}",node="{{ $m.Node }}",namespace="{{ $m.Namespace }}",pod="{{ $m.Pod }}",poduid="{{ $m.PodUid }}",container="{{ $m.Container }}",containerid="{{ $m.ContainerId }}",vgpucount="{{ $m.VGpuCount }}",mpsactivethread="{{ $m.MpsActiveThread }}"} {{ $m.UsedGpuMemory }}
 {{- end -}}`
 
 type metric struct {
-	Pid           uint32
-	UsedGpuMemory uint64
-	GpuIndex      int
-	GpuUUID       string
-	Node          string
-	Namespace     string
-	Pod           string
-	PodUid        string
-	Container     string
-	ContainerId   string
+	Pid             uint32
+	UsedGpuMemory   uint64
+	GpuIndex        int
+	GpuUUID         string
+	Node            string
+	Namespace       string
+	Pod             string
+	PodUid          string
+	Container       string
+	ContainerId     string
+	VGpuCount       string
+	MpsActiveThread string
 }
 
 type containerInfo struct {
-	Node        string
-	Namespace   string
-	Pod         string
-	PodUid      string
-	Container   string
-	ContainerId string
+	Node            string
+	Namespace       string
+	Pod             string
+	PodUid          string
+	Container       string
+	ContainerId     string
+	VGpuCount       string
+	MpsActiveThread string
 }
 
 func MetricServer() {
@@ -77,12 +81,14 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 	containerMap := make(map[string]containerInfo)
 	for _, container := range containers.GetContainers() {
 		containerMap[container.GetId()] = containerInfo{
-			Node:        node,
-			Namespace:   container.GetLabels()["io.kubernetes.pod.namespace"],
-			Pod:         container.GetLabels()["io.kubernetes.pod.name"],
-			PodUid:      container.GetLabels()["io.kubernetes.pod.uid"],
-			Container:   container.GetMetadata().GetName(),
-			ContainerId: container.GetId(),
+			Node:            node,
+			Namespace:       container.GetLabels()["io.kubernetes.pod.namespace"],
+			Pod:             container.GetLabels()["io.kubernetes.pod.name"],
+			PodUid:          container.GetLabels()["io.kubernetes.pod.uid"],
+			Container:       container.GetMetadata().GetName(),
+			ContainerId:     container.GetId(),
+			VGpuCount:       container.GetAnnotations()["k8s.kuartis.com/vgpu-count"],
+			MpsActiveThread: container.GetAnnotations()["k8s.kuartis.com/mps-active-thread"],
 		}
 	}
 	collected := []metric{}
@@ -97,16 +103,18 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 			if container, ok := containerMap[containerId]; ok {
 				log.Printf("Using %s Found container %+v for process: %d", containerId, container, process.Pid)
 				collected = append(collected, metric{
-					Pid:           process.Pid,
-					UsedGpuMemory: process.UsedGpuMemory,
-					GpuIndex:      i,
-					GpuUUID:       getDeviceUUID(d),
-					Node:          container.Node,
-					Namespace:     container.Namespace,
-					Pod:           container.Pod,
-					PodUid:        container.PodUid,
-					Container:     container.Container,
-					ContainerId:   container.ContainerId,
+					Pid:             process.Pid,
+					UsedGpuMemory:   process.UsedGpuMemory,
+					GpuIndex:        i,
+					GpuUUID:         getDeviceUUID(d),
+					Node:            container.Node,
+					Namespace:       container.Namespace,
+					Pod:             container.Pod,
+					PodUid:          container.PodUid,
+					Container:       container.Container,
+					ContainerId:     container.ContainerId,
+					VGpuCount:       container.VGpuCount,
+					MpsActiveThread: container.MpsActiveThread,
 				})
 			}
 		}
