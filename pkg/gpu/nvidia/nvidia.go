@@ -55,18 +55,14 @@ func getVGPUDevices(vGPUCount int) []*pluginapi.Device {
 			dev := pluginapi.Device{
 				ID:     vGPUDeviceID,
 				Health: pluginapi.Healthy,
+				Topology: &pluginapi.TopologyInfo{
+					Nodes: []*pluginapi.NUMANode{
+						{
+							ID: int64(i), // Dont split vGPUs accross different physical GPU devices.
+						},
+					},
+				},
 			}
-
-			// TODO: Enable Affinity for kubernetes > 1.16.x
-			//if d.CPUAffinity != nil {
-			//	dev.Topology = &pluginapi.TopologyInfo{
-			//		Nodes: []*pluginapi.NUMANode{
-			//			&pluginapi.NUMANode{
-			//				ID: int64(*(d.CPUAffinity)),
-			//			},
-			//		},
-			//	}
-			//}
 
 			devs = append(devs, &dev)
 		}
