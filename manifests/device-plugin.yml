@@ -1,5 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates
 # Copyright 2022 Kuartis.com
+# Copyright 2023 YouScan.io
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,26 +17,22 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: kuartis-virtual-gpu-device-plugin-daemonset
+  name: virtual-gpu-device-plugin-daemonset
   namespace: kube-system
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+      app.kubernetes.io/name: virtual-gpu-device-plugin
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+        app.kubernetes.io/name: virtual-gpu-device-plugin
     spec:
       hostIPC: true
       nodeSelector:
-        k8s.kuartis.com/accelerator: vgpu
-      tolerations:
-        - key: k8s.kuartis.com/vgpu
-          operator: Exists
-          effect: NoSchedule
+        accelerator: nvidia
       priorityClassName: "system-node-critical"
       initContainers:
         - name: set-compute-mode
@@ -45,8 +42,8 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
       containers:
-        - image: ghcr.io/kuartis/kuartis-virtual-gpu-device-plugin:0.7.0
-          name: kuartis-virtual-gpu-device-plugin-ctr
+        - image: ghcr.io/youscan/virtual-gpu-device-plugin:0.7.0
+          name: virtual-gpu-device-plugin-ctr
           command:
             - /usr/bin/virtual-gpu-device-plugin
           args:
@@ -95,8 +92,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
-  name: kuartis-virtual-gpu-device-plugin
+    app.kubernetes.io/name: virtual-gpu-device-plugin
+  name: virtual-gpu-device-plugin
   namespace: kube-system
 spec:
   ports:
@@ -105,7 +102,7 @@ spec:
       targetPort: 8080
       protocol: TCP
   selector:
-    app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+    app.kubernetes.io/name: virtual-gpu-device-plugin
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -113,8 +110,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
-  name: kuartis-virtual-gpu-device-plugin
+    app.kubernetes.io/name: virtual-gpu-device-plugin
+  name: virtual-gpu-device-plugin
   namespace: kube-system
 spec:
   endpoints:
@@ -126,4 +123,4 @@ spec:
       - kube-system
   selector:
     matchLabels:
-      app.kubernetes.io/name: kuartis-virtual-gpu-device-plugin
+      app.kubernetes.io/name: virtual-gpu-device-plugin

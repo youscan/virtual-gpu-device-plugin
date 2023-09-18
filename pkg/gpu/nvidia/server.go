@@ -1,5 +1,6 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates
 // Copyright 2022 Kuartis.com
+// Copyright 2023 YouScan.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,8 +31,8 @@ import (
 )
 
 const (
-	resourceName           = "k8s.kuartis.com/vgpu"
-	serverSock             = pluginapi.DevicePluginPath + "nvidia-kuartis-vgpu.sock"
+	resourceName           = "nvidia.com/gpu"
+	serverSock             = pluginapi.DevicePluginPath + "nvidia-vgpu.sock"
 	envDisableHealthChecks = "DP_DISABLE_HEALTHCHECKS"
 	allHealthChecks        = "xids"
 )
@@ -304,10 +305,10 @@ func (m *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.Alloc
 		cresp.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimitEnv, ",")
 
 		cresp.Annotations = map[string]string{}
-		cresp.Annotations["k8s.kuartis.com/gpu-ids"] = visibleDevsStr
-		cresp.Annotations["k8s.kuartis.com/vgpu-ids"] = allocatedDeviceIdsStr
-		cresp.Annotations["k8s.kuartis.com/vgpu-count"] = fmt.Sprintf("%d", len(req.DevicesIDs))
-		cresp.Annotations["k8s.kuartis.com/mps-active-thread"] = cudaActiveThread
+		cresp.Annotations["nvidia.com/gpu-ids"] = visibleDevsStr
+		cresp.Annotations["nvidia.com/vgpu-ids"] = allocatedDeviceIdsStr
+		cresp.Annotations["nvidia.com/vgpu-count"] = fmt.Sprintf("%d", len(req.DevicesIDs))
+		cresp.Annotations["nvidia.com/mps-active-thread"] = cudaActiveThread
 
 		log.Printf("Allocated physical devices: %s", visibleDevsStr)
 		log.Printf("Allocated virtual devices: %s", allocatedDeviceIdsStr)

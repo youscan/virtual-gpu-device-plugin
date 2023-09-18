@@ -1,6 +1,6 @@
-# IMPORTANT!
+# virtual-gpu-device-plugin
 
-This is a fork of https://github.com/awslabs/aws-virtual-gpu-device-plugin.
+This is a fork of <https://github.com/awslabs/aws-virtual-gpu-device-plugin>.
 
 AWS's original plugin does not support memory allocation via plugin, but by defining language specific arguments.
 
@@ -25,11 +25,9 @@ End goal is something like:
 ## Install and Test
 
 ```bash
-# Label your GPU nodes
-kubectl label node <node_name> k8s.kuartis.com/accelerator=vgpu
 
 # Install daemonset + service + service monitor (prometheus)
-kubectl create -f https://raw.githubusercontent.com/kuartis/kuartis-virtual-gpu-device-plugin/master/manifests/device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/youscan/virtual-gpu-device-plugin/master/manifests/device-plugin.yml
 
 # Notes about daemon set:
 # - Uses nvml to find which processes use GPU resources
@@ -59,7 +57,7 @@ spec:
         limits:
           # Partition your GPUs inside daemon set with --vgpu=<number> argument
           # Request virtual gpu here
-          k8s.kuartis.com/vgpu: '1'
+          nvidia.com/gpu: '1'
       volumeMounts:
         - name: nvidia-mps
           mountPath: /tmp/nvidia-mps

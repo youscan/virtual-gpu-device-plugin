@@ -29,7 +29,7 @@ var node = os.Getenv("NODE_NAME")
 var metricsFormat = `# HELP gpu_memory_usage_per_container Shows the GPU memory usage per container.
 # TYPE gpu_memory_usage_per_container gauge
 {{- range $m := . }}
-gpu_memory_usage_per_container{pid="{{ $m.Pid }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }}",node="{{ $m.Node }}",namespace="{{ $m.Namespace }}",pod="{{ $m.Pod }}",poduid="{{ $m.PodUid }}",container="{{ $m.Container }}",containerid="{{ $m.ContainerId }}",vgpucount="{{ $m.VGpuCount }}",mpsactivethread="{{ $m.MpsActiveThread }}"} {{ $m.UsedGpuMemory }}
+gpu_memory_usage_per_container{exported_pid="{{ $m.Pid }}",gpuindex="{{ $m.GpuIndex }}",gpuuuid="{{ $m.GpuUUID }}",exported_node="{{ $m.Node }}",exported_namespace="{{ $m.Namespace }}",exported_pod="{{ $m.Pod }}",poduid="{{ $m.PodUid }}",exported_container="{{ $m.Container }}",exported_containerid="{{ $m.ContainerId }}",vgpucount="{{ $m.VGpuCount }}",mpsactivethread="{{ $m.MpsActiveThread }}"} {{ $m.UsedGpuMemory }}
 {{- end -}}`
 
 type metric struct {
@@ -87,8 +87,8 @@ func collectMetrics(w http.ResponseWriter, r *http.Request) {
 			PodUid:          container.GetLabels()["io.kubernetes.pod.uid"],
 			Container:       container.GetMetadata().GetName(),
 			ContainerId:     container.GetId(),
-			VGpuCount:       container.GetAnnotations()["k8s.kuartis.com/vgpu-count"],
-			MpsActiveThread: container.GetAnnotations()["k8s.kuartis.com/mps-active-thread"],
+			VGpuCount:       container.GetAnnotations()["nvidia.com/vgpu-count"],
+			MpsActiveThread: container.GetAnnotations()["nvidia.com/mps-active-thread"],
 		}
 	}
 	collected := []metric{}

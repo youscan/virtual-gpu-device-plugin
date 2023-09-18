@@ -1,4 +1,4 @@
-module github.com/kuartis/kuartis-virtual-gpu-device-plugin
+module github.com/youscan/virtual-gpu-device-plugin
 
 go 1.17
 

@@ -1,5 +1,6 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates
 // Copyright 2022 Kuartis.com
+// Copyright 2023 YouScan.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/kuartis/kuartis-virtual-gpu-device-plugin/pkg/gpu/nvidia"
+	"github.com/youscan/virtual-gpu-device-plugin/pkg/gpu/nvidia"
 )
 
 var (

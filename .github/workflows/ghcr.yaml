@@ -6,7 +6,7 @@ on:
       - v*
 
 env:
-  IMAGE_NAME: kuartis-virtual-gpu-device-plugin
+  IMAGE_NAME: virtual-gpu-device-plugin
 
 jobs:
   push:

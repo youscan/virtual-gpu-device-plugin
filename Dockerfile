@@ -1,6 +1,6 @@
 # Copyright 2020 Amazon.com, Inc. or its affiliates
 # Copyright 2022 Kuartis.com
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -16,11 +16,11 @@
 FROM golang:1.17 as build
 
 ENV GOPROXY direct
-WORKDIR /go/src/github.com/kuartis/kuartis-virtual-gpu-device-plugin
+WORKDIR /go/src/github.com/youscan/virtual-gpu-device-plugin
 COPY . .
 
 RUN export CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' && \
-    go build -ldflags="-s -w" -o virtual-gpu-device-plugin main.go
+	go build -ldflags="-s -w" -o virtual-gpu-device-plugin main.go
 
 
 FROM amazonlinux:latest
@@ -28,6 +28,6 @@ FROM amazonlinux:latest
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=utility
 
-COPY --from=build /go/src/github.com/kuartis/kuartis-virtual-gpu-device-plugin/virtual-gpu-device-plugin /usr/bin/virtual-gpu-device-plugin
+COPY --from=build /go/src/github.com/youscan/virtual-gpu-device-plugin/virtual-gpu-device-plugin /usr/bin/virtual-gpu-device-plugin
 
 CMD ["virtual-gpu-device-plugin"]

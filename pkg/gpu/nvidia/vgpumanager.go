@@ -1,5 +1,6 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates
 // Copyright 2022 Kuartis.com
+// Copyright 2023 YouScan.io
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,8 +45,8 @@ func (vgm *vGPUManager) Run() error {
 		log.Printf("Failed to initialize NVML: %s.", nvml.ErrorString(ret))
 		log.Printf("If this is a GPU node, did you set the docker default runtime to `nvidia`?")
 
-		log.Printf("You can check the prerequisites at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#prerequisites")
-		log.Printf("You can learn how to set the runtime at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#quick-start")
+		log.Printf("You can check the prerequisites at: https://github.com/youscan/virtual-gpu-device-plugin#prerequisites")
+		log.Printf("You can learn how to set the runtime at: https://github.com/youscan/virtual-gpu-device-plugin#quick-start")
 
 		select {}
 	}
@@ -83,8 +84,8 @@ L:
 
 			devicePlugin = NewNvidiaDevicePlugin(vgm.vGPUCount, vgm.allowMultiGpu)
 			if err := devicePlugin.Serve(); err != nil {
-				log.Printf("You can check the prerequisites at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#prerequisites")
-				log.Printf("You can learn how to set the runtime at: https://github.com/kuartis/kuartis-virtual-gpu-device-plugin#quick-start")
+				log.Printf("You can check the prerequisites at: https://github.com/youscan/virtual-gpu-device-plugin#prerequisites")
+				log.Printf("You can learn how to set the runtime at: https://github.com/youscan/virtual-gpu-device-plugin#quick-start")
 			} else {
 				restart = false
 			}
